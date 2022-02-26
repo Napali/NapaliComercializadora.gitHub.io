@@ -1,120 +1,168 @@
-/*
-	Strata by HTML5 UP
-	html5up.net | @ajlkn
-	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
-*/
+/*==================== SHOW MENU ====================*/
+const showMenu = (toggleId, navId) =>{
+    const toggle = document.getElementById(toggleId),
+    nav = document.getElementById(navId)
+    
+    // Validate that variables exist
+    if(toggle && nav){
+        toggle.addEventListener('click', ()=>{
+            // We add the show-menu class to the div tag with the nav__menu class
+            nav.classList.toggle('show-menu')
+        })
+    }
+}
+showMenu('nav-toggle','nav-menu')
 
-(function($) {
+/*==================== REMOVE MENU MOBILE ====================*/
+const navLink = document.querySelectorAll('.nav__link')
 
-	var settings = {
+function linkAction(){
+    const navMenu = document.getElementById('nav-menu')
+    // When we click on each nav__link, we remove the show-menu class
+    navMenu.classList.remove('show-menu')
+}
+navLink.forEach(n => n.addEventListener('click', linkAction))
 
-		// Parallax background effect?
-			parallax: true,
+/*==================== SCROLL SECTIONS ACTIVE LINK ====================*/
+// const sections = document.querySelectorAll('section[id]')
 
-		// Parallax factor (lower = more intense, higher = less intense).
-			parallaxFactor: 20
+// function scrollActive(){
+//     const scrollY = window.pageYOffset
 
-	};
+//     sections.forEach(current =>{
+//         const sectionHeight = current.offsetHeight
+//         const sectionTop = current.offsetTop - 50;
+//         sectionId = current.getAttribute('id')
 
-	skel.breakpoints({
-		xlarge: '(max-width: 1800px)',
-		large: '(max-width: 1280px)',
-		medium: '(max-width: 980px)',
-		small: '(max-width: 736px)',
-		xsmall: '(max-width: 480px)'
-	});
+//         if(scrollY > sectionTop && scrollY <= sectionTop + sectionHeight){
+//             document.querySelector('.nav__menu a[href*=' + sectionId + ']').classList.add('active-link')
+//         }else{
+//             document.querySelector('.nav__menu a[href*=' + sectionId + ']').classList.remove('active-link')
+//         }
+//     })
+// }
+// window.addEventListener('scroll', scrollActive)
 
-	$(function() {
+/*==================== CHANGE BACKGROUND HEADER ====================*/ 
+function scrollHeader(){
+    const nav = document.getElementById('header')
+    // When the scroll is greater than 200 viewport height, add the scroll-header class to the header tag
+    if(this.scrollY >= 200) nav.classList.add('scroll-header'); else nav.classList.remove('scroll-header')
+}
+window.addEventListener('scroll', scrollHeader)
 
-		var $window = $(window),
-			$body = $('body'),
-			$header = $('#header');
+/*==================== SHOW SCROLL TOP ====================*/ 
+function scrollTop(){
+    const scrollTop = document.getElementById('scroll-top');
+    // When the scroll is higher than 560 viewport height, add the show-scroll class to the a tag with the scroll-top class
+    if(this.scrollY >= 560) scrollTop.classList.add('show-scroll'); else scrollTop.classList.remove('show-scroll')
+}
+window.addEventListener('scroll', scrollTop)
 
-		// Disable animations/transitions until the page has loaded.
-			$body.addClass('is-loading');
+/*==================== DARK LIGHT THEME ====================*/ 
+const themeButton = document.getElementById('theme-button')
+const darkTheme = 'dark-theme'
+const iconTheme = 'bx-sun'
 
-			$window.on('load', function() {
-				$body.removeClass('is-loading');
-			});
+// Previously selected topic (if user selected)
+const selectedTheme = localStorage.getItem('selected-theme')
+const selectedIcon = localStorage.getItem('selected-icon')
 
-		// Touch?
-			if (skel.vars.mobile) {
+// We obtain the current theme that the interface has by validating the dark-theme class
+const getCurrentTheme = () => document.body.classList.contains(darkTheme) ? 'dark' : 'light'
+const getCurrentIcon = () => themeButton.classList.contains(iconTheme) ? 'bx-moon' : 'bx-sun'
 
-				// Turn on touch mode.
-					$body.addClass('is-touch');
+// We validate if the user previously chose a topic
+if (selectedTheme) {
+  // If the validation is fulfilled, we ask what the issue was to know if we activated or deactivated the dark
+  document.body.classList[selectedTheme === 'dark' ? 'add' : 'remove'](darkTheme)
+  themeButton.classList[selectedIcon === 'bx-moon' ? 'add' : 'remove'](iconTheme)
+}
 
-				// Height fix (mostly for iOS).
-					window.setTimeout(function() {
-						$window.scrollTop($window.scrollTop() + 1);
-					}, 0);
+// Activate / deactivate the theme manually with the button
+themeButton.addEventListener('click', () => {
+    // Add or remove the dark / icon theme
+    document.body.classList.toggle(darkTheme)
+    themeButton.classList.toggle(iconTheme)
+    // We save the theme and the current icon that the user chose
+    localStorage.setItem('selected-theme', getCurrentTheme())
+    localStorage.setItem('selected-icon', getCurrentIcon())
+})
 
-			}
 
-		// Fix: Placeholder polyfill.
-			$('form').placeholder();
 
-		// Prioritize "important" elements on medium.
-			skel.on('+medium -medium', function() {
-				$.prioritize(
-					'.important\\28 medium\\29',
-					skel.breakpoint('medium').active
-				);
-			});
+/*==================== CONTACT FORM ====================*/ 
 
-		// Header.
+const $form = document.getElementById('contact__form');
+const modalMsgOk = document.querySelector('.contact__modal')
 
-			// Parallax background.
+$form.addEventListener('submit', handleSubmit)
 
-				// Disable parallax on IE (smooth scrolling is jerky), and on mobile platforms (= better performance).
-					if (skel.vars.browser == 'ie'
-					||	skel.vars.mobile)
-						settings.parallax = false;
+async function handleSubmit(event){
+    event.preventDefault()
+    const form = new FormData(this)
+    const response = await fetch(this.action, {
+        method: this.method,
+        body: form,
+        headers: {
+            'Accept': 'application/json'
+        }
+    })
+    if (response.ok){
+        this.reset()
+        modalMsgOk.classList.add('active-modal');
+    }
+}
 
-				if (settings.parallax) {
 
-					skel.on('change', function() {
 
-						if (skel.breakpoint('medium').active) {
+document.querySelector('.contact__modal-close').addEventListener('click', () =>{
+    modalMsgOk.classList.remove('active-modal');
+})
 
-							$window.off('scroll.strata_parallax');
-							$header.css('background-position', 'top left, center center');
 
-						}
-						else {
+/*==================== SCROLL REVEAL ANIMATION ====================*/
+const sr = ScrollReveal({
+    origin: 'top',
+    distance: '30px',
+    duration: 750,
+    reset: true
+});
 
-							$header.css('background-position', 'left 0px');
+sr.reveal(`.home__data, .home__img,
+            .about__data, .about__img,
+            .services__content, .menu__content,
+            .app__data, .app__img,
+            .contact__data, .contact__information, .contact__button,
+            .footer__content`, {
+    interval: 100
+})
 
-							$window.on('scroll.strata_parallax', function() {
-								$header.css('background-position', 'left ' + (-1 * (parseInt($window.scrollTop()) / settings.parallaxFactor)) + 'px');
-							});
 
-						}
+/*====================  FRAGANCE FINDER ====================*/
+let msgSoon = document.querySelector('.fragance-finder__modal');
+let msgSoonToggle = document.querySelectorAll('.fragance-finder__toggle')[0];
 
-					});
+msgSoonToggle.addEventListener('click', function(e){
+    e.preventDefault();
+    msgSoon.classList.add('active-modal');
 
-				}
+})
 
-		// Main Sections: Two.
+document.querySelector('.fragance-finder__modal').addEventListener('click', () =>{
+    msgSoon.classList.remove('active-modal');
+})
 
-			// Lightbox gallery.
-				$window.on('load', function() {
+/*====================  WORK US ====================*/
+let msgWorkUs = document.querySelector('.work-us__modal');
+let msgWorkUsToggle = document.querySelectorAll('.work-us__toggle')[0];
 
-					$('#two').poptrox({
-						caption: function($a) { return $a.next('h3').text(); },
-						overlayColor: '#2c2c2c',
-						overlayOpacity: 0.85,
-						popupCloserText: '',
-						popupLoaderText: '',
-						selector: '.work-item a.image',
-						usePopupCaption: true,
-						usePopupDefaultStyling: false,
-						usePopupEasyClose: false,
-						usePopupNav: true,
-						windowMargin: (skel.breakpoint('small').active ? 0 : 50)
-					});
+msgWorkUsToggle.addEventListener('click', function(e){
+    e.preventDefault();
+    msgWorkUs.classList.add('active-modal');
 
-				});
+})
 
-	});
-
-})(jQuery);
+document.querySelector('.work-us__modal').addEventListener('click', () =>{
+    msgWorkUs.classList.remove('active-modal');
+})
